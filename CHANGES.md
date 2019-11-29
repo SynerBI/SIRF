@@ -1,5 +1,9 @@
 # ChangeLog
 
+## v2.x
+
+* added SPECTUBMatrix for (simple) usage in SPECT
+
 ## v2.1.0
 
 * PET/STIR
@@ -48,6 +52,7 @@
   * in keeping with changes to c++ and python, classes are now called with e.g., `sirf.STIR.obj` instead of `mSTIR.obj`. Aliases can be used to shorten this (e.g., `PET=set_up_PET()` and then `PET.obj`).
 * CMake:
   * Updated minimum required version of CMake to 3.9.0.
+>>>>>>> master
 
 ## v1.1.0
 

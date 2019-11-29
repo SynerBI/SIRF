@@ -87,6 +87,8 @@ void* cSTIR_newObject(const char* name)
 			return NEW_OBJECT_HANDLE(AcqModUsingMatrix3DF);
 		if (boost::iequals(name, "RayTracingMatrix"))
 			return NEW_OBJECT_HANDLE(RayTracingMatrix);
+		if (boost::iequals(name, "SPECTUBMatrix"))
+			return NEW_OBJECT_HANDLE(SPECTUBMatrix);
 		if (boost::iequals(name, "QuadraticPrior"))
 			return NEW_OBJECT_HANDLE(QuadPrior3DF);
 		if (boost::iequals(name, "PLSPrior"))
@@ -126,6 +128,8 @@ void* cSTIR_setParameter
 			return cSTIR_setAcqModUsingMatrixParameter(hs, name, hv);
 		else if (boost::iequals(obj, "RayTracingMatrix"))
 			return cSTIR_setRayTracingMatrixParameter(hs, name, hv);
+		else if (boost::iequals(obj, "SPECTUBMatrix"))
+			return cSTIR_setSPECTUBMatrixParameter(hs, name, hv);
 		else if (boost::iequals(obj, "GeneralisedPrior"))
 			return cSTIR_setGeneralisedPriorParameter(hs, name, hv);
 		else if (boost::iequals(obj, "QuadraticPrior"))
@@ -176,6 +180,8 @@ void* cSTIR_parameter(const void* ptr, const char* obj, const char* name)
 			(handle, name);
 		else if (boost::iequals(obj, "RayTracingMatrix"))
 			return cSTIR_rayTracingMatrixParameter(handle, name);
+		else if (boost::iequals(obj, "SPECTUBMatrix"))
+			return cSTIR_SPECTUBMatrixParameter(handle, name);
 		else if (boost::iequals(obj, "AcqModUsingMatrix"))
 			return cSTIR_acqModUsingMatrixParameter(handle, name);
 		else if (boost::iequals(obj, "GeneralisedPrior"))
@@ -493,6 +499,18 @@ void* cSTIR_acquisitionModelBwd(void* ptr_am, void* ptr_ad,
 	CATCH;
 }
 
+extern "C"
+void* cSTIR_SPECTUBMatrixSetResolution
+	(const void* ptr_acq_matrix,
+         const float collimator_sigma_0_in_mm, const float collimator_slope_in_mm, const bool full_3D)
+{
+	try {
+                SPECTUBMatrix& matrix = objectFromHandle<SPECTUBMatrix>(ptr_acq_matrix);
+                matrix.set_resolution_model(collimator_sigma_0_in_mm, collimator_slope_in_mm, full_3D);
+                return (void*)new DataHandle;
+        }
+        CATCH;
+}
 extern "C"
 void*
 cSTIR_setAcquisitionDataStorageScheme(const char* scheme)
