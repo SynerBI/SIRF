@@ -69,24 +69,11 @@ if (APPLE)
   endif(SHARED_LIBS_ABS_PATH)
 endif(APPLE)
 
-# If OSX, we might need to assume pthreads. For this, first try to find boost_thread.
-# If that fails, then give a bit of help.
-if (APPLE)
-  find_package(Boost COMPONENTS thread QUIET)
-  if (NOT boost_thread_FOUND)
-    set(CMAKE_THREAD_LIBS_INIT "-lpthread")
-    set(CMAKE_HAVE_THREADS_LIBRARY 1)
-    set(CMAKE_USE_WIN32_THREADS_INIT 0)
-    set(CMAKE_USE_PTHREADS_INIT 1)
-    set(THREADS_PREFER_PTHREAD_FLAG ON)
-  endif()
-endif()
-
 ####### External packages
 
 #### we need the boost library from boost.org
 set(BOOST_ROOT CACHE PATH "root of Boost")
-find_package(Boost 1.36.0 COMPONENTS system filesystem thread date_time chrono REQUIRED)
+find_package(Boost 1.36.0 COMPONENTS system filesystem REQUIRED)
 # For Visual Studio we have to disable the auto-linking feature of boost
 # where just including a boost file automatically adds it to the linker path.
 # Although this sounds great, it sadly breaks because of conflicting file-paths when linking etc etc.
