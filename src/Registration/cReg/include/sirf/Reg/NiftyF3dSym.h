@@ -52,6 +52,7 @@ In theory, multiple time points can be used, but thus far has only been tested f
 t == 1 for both reference and floating images.
 
 \author Richard Brown
+\author Alexander C. Whitehead
 \author SyneRBI
 */
 template<class dataType> class NiftyF3dSym : public NiftyRegistration<dataType>
@@ -107,6 +108,8 @@ protected:
     int _reference_time_point;
     /// Use symmetric bool
     bool _use_symmetric = false;
+    /// Use velocity bool
+    bool _use_velocity = true;
     /// Transformation matrix
     std::shared_ptr<const AffineTransformation<float> > _initial_transformation_sptr;
 };

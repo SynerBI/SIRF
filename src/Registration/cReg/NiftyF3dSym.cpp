@@ -33,6 +33,7 @@ limitations under the License.
 #include "sirf/Reg/NiftiImageData3D.h"
 #include "sirf/Reg/NiftiImageData3DDisplacement.h"
 #include <_reg_f3d_sym.h>
+#include <_reg_f3d2.h>
 
 using namespace sirf;
 
@@ -50,10 +51,21 @@ void NiftyF3dSym<dataType>::process()
     NiftiImageData3D<dataType> flo = *this->_floating_images_nifti.at(0);
 
     // Create the registration object
-    if (_use_symmetric)
-        _registration_sptr = std::make_shared<reg_f3d_sym<dataType> >(_reference_time_point, _floating_time_point);
+    if(_use_symmetric)
+    {
+        _registration_sptr = std::make_shared<reg_f3d_sym<dataType>>(_reference_time_point, _floating_time_point);
+    }
     else
-        _registration_sptr = std::make_shared<reg_f3d<dataType> >(_reference_time_point, _floating_time_point);
+    {
+        if(_use_velocity)
+        {
+            _registration_sptr = std::make_shared<reg_f3d2<dataType>>(_reference_time_point, _floating_time_point);
+        }
+        else
+        {
+            _registration_sptr = std::make_shared<reg_f3d<dataType>>(_reference_time_point, _floating_time_point);
+        }
+    }
 
     // Set reference and floating images
     _registration_sptr->SetReferenceImage(ref.get_raw_nifti_sptr().get());
@@ -201,6 +213,8 @@ void NiftyF3dSym<dataType>::check_parameters() const
         throw std::runtime_error("Reference time point has not been set."); }
 }
 
+// currently UseNMISetReferenceBinNumber and UseNMISetFloatingBinNumber set their respective number of bins for the first time point only
+
 template<class dataType>
 void NiftyF3dSym<dataType>::parse_parameter_file()
 {
@@ -228,6 +242,8 @@ void NiftyF3dSym<dataType>::parse_parameter_file()
     parser.add_key("SetSSDWeight",&reg_f3d<dataType>::SetSSDWeight);
     parser.add_key("SetLNCCWeight",&reg_f3d<dataType>::SetLNCCWeight);
     parser.add_key("SetNMIWeight",&reg_f3d<dataType>::SetNMIWeight);
+    parser.add_key("UseNMISetReferenceBinNumber",&reg_f3d<dataType>::UseNMISetReferenceBinNumber);
+    parser.add_key("UseNMISetFloatingBinNumber",&reg_f3d<dataType>::UseNMISetFloatingBinNumber);
     parser.add_key("SetKLDWeight",&reg_f3d<dataType>::SetKLDWeight);
     parser.add_key("SetFloatingThresholdUp",&reg_f3d<dataType>::SetFloatingThresholdUp);
     parser.add_key("SetFloatingThresholdLow",&reg_f3d<dataType>::SetFloatingThresholdLow);
@@ -237,6 +253,12 @@ void NiftyF3dSym<dataType>::parse_parameter_file()
 
     parser.parse();
 }
+
+// currently SetSSDWeight SetLNCCWeight and SetKLDWeight set their respective bool for the first time point only
+// currently UseNMISetReferenceBinNumber and UseNMISetFloatingBinNumber set their respective number of bins for the first time point only
+// currently SetSSDWeight does not normalise
+// currently SetLNCCWeight uses a sd of 1.0
+
 template<class dataType>
 void NiftyF3dSym<dataType>::set_parameters()
 {
@@ -260,10 +282,12 @@ void NiftyF3dSym<dataType>::set_parameters()
         else if (strcmp(par.c_str(),"SetLevelToPerform")== 0) _registration_sptr->SetLevelToPerform(unsigned(stoi(arg1)));
         else if (strcmp(par.c_str(),"SetMaximalIterationNumber")== 0) _registration_sptr->SetMaximalIterationNumber(unsigned(stoi(arg1)));
         else if (strcmp(par.c_str(),"SetPerturbationNumber")== 0) _registration_sptr->SetPerturbationNumber(unsigned(stoi(arg1)));
-        else if (strcmp(par.c_str(),"SetSSDWeight")== 0) _registration_sptr->SetSSDWeight(stoi(arg1), stoi(arg2));
-        else if (strcmp(par.c_str(),"SetLNCCWeight")== 0) _registration_sptr->SetLNCCWeight(stoi(arg1), stod(arg2));
-        else if (strcmp(par.c_str(),"SetNMIWeight")== 0) _registration_sptr->SetNMIWeight(stoi(arg1), stod(arg2));
-        else if (strcmp(par.c_str(),"SetKLDWeight")== 0) _registration_sptr->SetKLDWeight(stoi(arg1), unsigned(stoi(arg2)));
+        else if (strcmp(par.c_str(),"SetSSDWeight")== 0){ _registration_sptr->SetSSDWeight(stoi(arg1), stoi(arg2)); _registration_sptr->UseSSD(0, 0); }
+        else if (strcmp(par.c_str(),"SetLNCCWeight")== 0){ _registration_sptr->SetLNCCWeight(stoi(arg1), stod(arg2)); _registration_sptr->UseLNCC(0, 1.0); }
+        else if (strcmp(par.c_str(),"SetNMIWeight")== 0){ _registration_sptr->SetNMIWeight(stoi(arg1), stod(arg2)); }
+        else if (strcmp(par.c_str(),"UseNMISetReferenceBinNumber")== 0) _registration_sptr->UseNMISetReferenceBinNumber(0, stod(arg1));
+        else if (strcmp(par.c_str(),"UseNMISetFloatingBinNumber")== 0) _registration_sptr->UseNMISetFloatingBinNumber(0, stod(arg1));
+        else if (strcmp(par.c_str(),"SetKLDWeight")== 0){ _registration_sptr->SetKLDWeight(stoi(arg1), unsigned(stoi(arg2))); _registration_sptr->UseKLDivergence(0); }
         else if (strcmp(par.c_str(),"SetFloatingThresholdUp")== 0) _registration_sptr->SetFloatingThresholdUp(unsigned(stoi(arg1)), dataType(stod(arg2)));
         else if (strcmp(par.c_str(),"SetFloatingThresholdLow")== 0) _registration_sptr->SetFloatingThresholdLow(unsigned(stoi(arg1)), dataType(stod(arg2)));
         else if (strcmp(par.c_str(),"SetReferenceThresholdUp")== 0) _registration_sptr->SetReferenceThresholdUp(unsigned(stoi(arg1)), dataType(stod(arg2)));
