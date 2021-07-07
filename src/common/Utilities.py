@@ -58,9 +58,41 @@ def examples_data_path(data_type):
         return os.path.join(SIRF_INSTALL_PATH , data_path)
     elif SIRF_PATH is not None:
         return os.path.join(SIRF_PATH, 'data', 'examples', data_type)
-    else:
-        errorMsg = 'You need to set the SIRF_DATA_PATH or SIRF_INSTALL_PATH environment variable to allow finding the raw data.'
-        raise ValueError(errorMsg)
+
+    # one final effort
+    try:
+        # Try find <SIRF_INSTALL_PATH>/share/data/examples
+        py_root = os.path.abspath(sirf.__file__)
+        try:
+            # is install dir like <SIRF_INSTALL_PATH>/lib/python?.?/site-packages?
+            lib_idx = py_root.split(os.sep).index('lib')
+        except ValueError:
+            # is install dir like <SIRF_INSTALL_PATH>/python? (SuperBuild)
+            lib_idx = py_root.split(os.sep).index('python')
+        # on Unix, first element of split is empty
+        # On Windows, first element of split is Drive
+        # Split out this first element and get SIRF_INSTALL_PATH candidate
+        maybe_drive, *path_to_sirf = py_root.split(os.sep)[:lib_idx]
+        potential_install_loc = \
+            maybe_drive + os.path.join(os.sep, *path_to_sirf)
+        # Now data_dir might be:
+        # <SIRF_INSTALL_PATH>/share/SIRF-<major>.<minor>/data/examples
+        sirf_ver_folder = 'SIRF-{}.{}'.format(
+            sirf.__version_major__, sirf.__version_minor__)
+        potential_sirf_data_path = os.path.join(
+            potential_install_loc, 'share', sirf_ver_folder, 'data',
+            'examples', data_type)
+        # if it exists, assume that's it
+        if os.path.exists(potential_sirf_data_path):
+            return potential_sirf_data_path
+    except Exception as e:
+        # didn't work
+        pass
+
+    errorMsg = \
+        'You need to set the SIRF_DATA_PATH or SIRF_INSTALL_PATH ' \
+        'environment variable to allow finding the raw data.'
+    raise ValueError(errorMsg)
 
 
 def existing_filepath(data_path, file_name):
