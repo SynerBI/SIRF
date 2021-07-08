@@ -35,7 +35,7 @@ if (DOWNLOAD_ZENODO_TEST_DATA)
                 "a692ba3a6c456d1ad49750717a9d5dda")
 endif()
 
-OPTION(RERUN_ISMRMRD_SHEPP_LOGAN "Generate testdata compatible with ISMRMRD Version" OFF)
+OPTION(RERUN_ISMRMRD_SHEPP_LOGAN "Generate testdata compatible with ISMRMRD Version" ON)
 find_program(EXE_ISMRMRD_SL NAMES ismrmrd_generate_cartesian_shepp_logan
                 NAMES_PER_DIR
                 PATHS ${CMAKE_INSTALL_PREFIX})
@@ -52,7 +52,7 @@ if(EXE_ISMRMRD_SL AND RERUN_ISMRMRD_SHEPP_LOGAN)
         COMMAND rm -f ${TESTDATA_OUTPUT_NAME_FULL}
         COMMAND rm -f ${TESTDATA_OUTPUT_NAME_GRAPPA}
         COMMAND env LD_LIBRARY_PATH=${CMAKE_INSTALL_PREFIX}/lib:$LD_LIBRARY_PATH ${EXE_ISMRMRD_SL} -r 2 -o "${TESTDATA_TEMP_PREFIX}_1.h5"
-        COMMAND env LD_LIBRARY_PATH=${CMAKE_INSTALL_PREFIX}/lib:$LD_LIBRARY_PATH ${EXE_ISMRMRD_SL} -a 2 -o "${TESTDATA_TEMP_PREFIX}_2.h5"
+        COMMAND env LD_LIBRARY_PATH=${CMAKE_INSTALL_PREFIX}/lib:$LD_LIBRARY_PATH ${EXE_ISMRMRD_SL} -w 64 -a 2 -o "${TESTDATA_TEMP_PREFIX}_2.h5"
         WORKING_DIRECTORY ${TESTDATA_OUTPUT_PATH})
 elseif(RERUN_ISMRMRD_SHEPP_LOGAN)
     message(ERROR "We could not find the ISMRMRD executable for the Shepp Logan Generation." )
